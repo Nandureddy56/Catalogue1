@@ -1,0 +1,91 @@
+	import java.util.HashMap;
+public class Main
+{
+    // Function to decode y values with a given base
+    public static int decodeValue(String base, String value) {
+        return Integer.parseInt(value, Integer.parseInt(base));
+    }
+
+    // Function to apply Lagrange Interpolation and find the constant term 'c'
+    public static double lagrangeInterpolation(HashMap<Integer, Integer> points, int k) {
+        double constantTerm = 0.0;
+
+        for (Integer xi : points.keySet()) {
+            double li = 1.0;
+            for (Integer xj : points.keySet()) {
+                if (!xj.equals(xi)) {
+                    li *= (0.0 - xj) / (xi - xj); // Lagrange basis polynomial
+                }
+            }
+            constantTerm += li * points.get(xi); // Multiply by y value
+        }
+        return constantTerm;
+    }
+
+    // Simple function to parse the input string manually
+    public static HashMap<String, String> parseJSON(String inputJson, String field) {
+        HashMap<String, String> result = new HashMap<>();
+        String[] lines = inputJson.split("\n");
+
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("\"" + field + "\"")) {
+                String value = line.split(":")[1].trim();
+                value = value.replace("\"", "").replace(",", "").trim();
+                result.put(field, value);
+            }
+        }
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+        // Sample input in string format
+        String inputJson = "{\n" +
+                "    \"keys\": {\n" +
+                "        \"n\": 4,\n" +
+                "        \"k\": 3\n" +
+                "    },\n" +
+                "    \"1\": {\n" +
+                "        \"base\": \"10\",\n" +
+                "        \"value\": \"4\"\n" +
+                "    },\n" +
+                "    \"2\": {\n" +
+                "        \"base\": \"2\",\n" +
+                "        \"value\": \"111\"\n" +
+                "    },\n" +
+                "    \"3\": {\n" +
+                "        \"base\": \"10\",\n" +
+                "        \"value\": \"12\"\n" +
+                "    },\n" +
+                "    \"6\": {\n" +
+                "        \"base\": \"4\",\n" +
+                "        \"value\": \"213\"\n" +
+                "    }\n" +
+                "}";
+
+        // Extract n and k manually from the input string
+        int n = Integer.parseInt(parseJSON(inputJson, "n").get("n"));
+        int k = Integer.parseInt(parseJSON(inputJson, "k").get("k"));
+
+        // Store the points (x, y) in a HashMap
+        HashMap<Integer, Integer> points = new HashMap<>();
+
+        for (int i = 1; i <= n; i++) {
+            String base = parseJSON(inputJson, "base").get("base");
+            String value = parseJSON(inputJson, "value").get("value");
+
+            // Decode the y value using the base
+            int decodedY = decodeValue(base, value);
+
+            // Add the point (x, y) to the HashMap
+            points.put(i, decodedY);
+        }
+
+        // Find the constant term (c) using Lagrange Interpolation
+        double constantTerm = lagrangeInterpolation(points, k);
+        double r = constantTerm/13;
+        // Print the result
+        System.out.println("The constant term (c) is: " + r);
+    }
+}
